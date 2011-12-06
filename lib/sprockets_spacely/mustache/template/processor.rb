@@ -4,17 +4,17 @@ module Sprockets
       class Processor < Tilt::Template
         include ActionView::Helpers::JavaScriptHelper
 
-        def self.default_mime_type
-          'application/javascript'
+        # Add class configurations
+        class << self
+          attr_accessor :default_namespace, :default_library
         end
 
-        def self.default_namespace
-          "this.MustacheTemplates"
-        end
+        # Set defaults
+        self.default_mime_type = 'application/javascript'
 
-        def self.default_library
-          "jQuery"
-        end
+        self.default_namespace = "this.MustacheTemplates"
+
+        self.default_library = "jQuery"
 
         attr_reader :namespace, :library
 
@@ -24,15 +24,12 @@ module Sprockets
         end
 
         def evaluate(scope, locals, &block)
-          Generator.new(namespace, scope.logical_path, escape_javascript(data), library).generate
-
-
           js_function = <<-JS
 (function($) {
   #{namespace} || (#{namespace} = {});
 
   #{namespace}[#{scope.logical_path.inspect}] = function(obj, partials) {
-    return Mustache.to_html("#{escape_javascript template_string}", obj, partials);
+    return Mustache.to_html("#{escape_javascript data}", obj, partials);
   };
 }(#{library}));
           JS
