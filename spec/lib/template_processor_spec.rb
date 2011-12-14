@@ -1,12 +1,15 @@
 require 'spec_helper'
 
-describe Sprockets::Mustache::Template::Generator do
+describe Sprockets::Mustache::Template::Processor do
 
-  let :generator do
+  let :scope do
+    stub :logical_path => "templates/javascripts/backbone/templates/mustache/entryList"
+  end
+
+  let :processor do
 
     namespace = "my.Namespace"
     library = "Zepto"
-    logical_path = "javascripts/backbone/templates/mustache/entryList"
     template_string = <<-HTML
 <table class="ledger">
   <thead>
@@ -21,16 +24,17 @@ describe Sprockets::Mustache::Template::Generator do
 </table>
     HTML
 
-    Sprockets::Mustache::Template::Generator.new(namespace, logical_path, template_string, library)
+    described_class.default_namespace = namespace
+    described_class.default_library = library
+
+    described_class.new do
+      template_string
+    end
   end
 
-  it "calculates the template name" do
-    generator.template_name.should == "javascripts/backbone/templates/mustache/entryList"
-  end
-
-  describe "#generate" do
+  describe "#evaluate" do
     before do
-      @js = generator.generate
+      @js = processor.evaluate scope, {}
     end
 
     it "makes the named JS function as a string" do
@@ -38,15 +42,15 @@ describe Sprockets::Mustache::Template::Generator do
     end
 
     it "assigns the correct namespace" do
-      @js.should match(/my\.Namespace\.mustache\['javascripts\/backbone\/templates\/mustache\/entryList'\] = \{/)
+      @js.should match(/my\.Namespace\["javascripts\/backbone\/templates\/mustache\/entryList"\] =/)
     end
 
     it "assigns the correct library" do
-      @js.should match(/}\(Zepto\)/)
+      @js.should match(/\}\(Zepto\)/)
     end
 
     it "puts the template in the mustache object" do
-      @js.should match(/<table class="ledger">/)
+      @js.should match(/<table class=\\"ledger\\">/)
     end
 
     it "has a render function that calls Mustache.to_html" do
