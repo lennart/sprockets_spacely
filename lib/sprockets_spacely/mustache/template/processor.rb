@@ -28,7 +28,7 @@ module Sprockets
 (function($) {
   #{namespace} || (#{namespace} = {});
 
-  #{namespace}[#{scope.logical_path.inspect}] = function(obj, partials) {
+  #{namespace}[#{scope.logical_path.inspect.gsub %r{\Atemplates/}, ""}] = function(obj, partials) {
     return Mustache.to_html("#{escape_javascript data}", obj, partials);
   };
 }(#{library}));
